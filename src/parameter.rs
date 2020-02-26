@@ -2,36 +2,26 @@ use rusoto_ssm::GetParameterRequest;
 use rusoto_ssm::PutParameterRequest;
 use rusoto_ssm::{Ssm, SsmClient};
 use std::option::NoneError;
-use yaml_rust::Yaml;
 
 pub struct Parameter {
-    name: String,
-    value: String,
-    description: String,
-    is_secure: bool,
+    pub name: String,
+    pub value: String,
+    pub description: String,
+    pub is_secure: bool,
 }
 
 impl Parameter {
-    pub fn update(param: Yaml, client: &SsmClient) -> Result<String, NoneError> {
-        let parameter = Parameter {
-            name: param["name"].as_str()?.to_string(),
-            value: param["value"].as_str()?.to_string(),
-            description: param["description"].as_str()?.to_string(),
-            is_secure: param["is_secure"].as_bool()?,
-        };
-
-        if parameter.needs_updating(client)? {
-            let parameter_request = parameter.to_put_parameter_request();
+    pub fn update(&self, client: &SsmClient) -> Result<String, NoneError> {
+        if self.needs_updating(client)? {
+            let parameter_request = self.to_put_parameter_request();
 
             match client.put_parameter(parameter_request).sync() {
-                Ok(_parameter_result) => {
-                    println!("Parameter {} successfully updated", parameter.name)
-                }
-                Err(error) => println!("Parameter {} failed to update: {}", parameter.name, error),
+                Ok(_parameter_result) => println!("Parameter {} successfully updated", self.name),
+                Err(error) => println!("Parameter {} failed to update: {}", self.name, error),
             }
         }
 
-        Ok(parameter.name)
+        Ok(self.name.clone())
     }
 
     fn needs_updating(&self, client: &SsmClient) -> Result<bool, NoneError> {

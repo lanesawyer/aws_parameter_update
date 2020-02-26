@@ -18,7 +18,7 @@ use rusoto_ssm::SsmClient;
 use std::error::Error;
 use std::fs::File;
 use std::io::prelude::Read;
-use yaml_rust::{Yaml, YamlLoader};
+use yaml_rust::YamlLoader;
 
 fn main() {
     println!("Starting AWS parameter updates");
@@ -49,7 +49,7 @@ fn get_filename_from_args() -> String {
     filename.to_string()
 }
 
-fn read_parameters_yaml(filename: String) -> Result<Vec<Yaml>, Box<dyn (Error)>> {
+fn read_parameters_yaml(filename: String) -> Result<Vec<Parameter>, Box<dyn (Error)>> {
     let mut file = File::open(filename).expect("Unable to open parameter input file");
     let mut contents = String::new();
 
@@ -58,15 +58,27 @@ fn read_parameters_yaml(filename: String) -> Result<Vec<Yaml>, Box<dyn (Error)>>
 
     let docs = YamlLoader::load_from_str(&contents)?;
 
-    let parameters = docs[0].as_vec().unwrap().to_vec();
+    let parameters: Vec<Parameter> = docs[0]
+        .as_vec()
+        .unwrap()
+        .to_vec()
+        .iter()
+        .map(|param| Parameter {
+            name: param["name"].as_str().unwrap().to_string(),
+            value: param["value"].as_str().unwrap().to_string(),
+            description: param["description"].as_str().unwrap().to_string(),
+            is_secure: param["is_secure"].as_bool().unwrap(),
+        })
+        .collect();
+
     Ok(parameters)
 }
 
-fn update_parameters(parameters_from_yaml: Vec<Yaml>) {
+fn update_parameters(parameters_from_yaml: Vec<Parameter>) {
     let client = SsmClient::new(Region::UsWest2);
 
     for parameter in parameters_from_yaml {
-        match Parameter::update(parameter, &client) {
+        match parameter.update(&client) {
             Ok(parameter_name) => println!("Parameter {} processed", parameter_name),
             Err(error) => println!("Parameter not updated: {:?}", error),
         }
