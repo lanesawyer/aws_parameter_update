@@ -1,0 +1,11 @@
+[package]
+name = "parameter_update"
+version = "0.1.0"
+authors = ["Lane Sawyer <github@lanesawyer.dev>"]
+edition = "2018"
+
+[dependencies]
+clap = "2.33.0"
+rusoto_core = "0.42"
+rusoto_ssm = "0.42"
+yaml-rust = "0.4"
