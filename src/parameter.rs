@@ -1,3 +1,4 @@
+use log::{info, error};
 use rusoto_ssm::GetParameterRequest;
 use rusoto_ssm::PutParameterRequest;
 use rusoto_ssm::{Ssm, SsmClient};
@@ -16,8 +17,8 @@ impl Parameter {
             let parameter_request = self.to_put_parameter_request();
 
             match client.put_parameter(parameter_request).sync() {
-                Ok(_parameter_result) => println!("Parameter {} successfully updated", self.name),
-                Err(error) => println!("Parameter {} failed to update: {}", self.name, error),
+                Ok(_parameter_result) => info!("Parameter {} successfully updated", self.name),
+                Err(error) => error!("Parameter {} failed to update: {}", self.name, error),
             }
         }
 
@@ -28,21 +29,21 @@ impl Parameter {
         match client.get_parameter(self.to_get_parameter_request()).sync() {
             Ok(parameter_result) => {
                 let existing_value = parameter_result.parameter?.value?;
-                println!(
+                info!(
                     "Found parameter {} with existing value: {}",
                     self.name, existing_value
                 );
 
                 if self.value != existing_value {
-                    println!("Parameter {} needs updating", self.name);
+                    info!("Parameter {} needs updating", self.name);
                     Ok(true)
                 } else {
-                    println!("Parameter {} does not need updating", self.name);
+                    info!("Parameter {} does not need updating", self.name);
                     Ok(false)
                 }
             }
             Err(error) => {
-                println!("Could not retreive parameter {}: {:?}", self.name, error);
+                error!("Could not retreive parameter {}: {:?}", self.name, error);
                 panic!();
             }
         }

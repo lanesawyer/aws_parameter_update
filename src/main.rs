@@ -6,6 +6,10 @@ mod parameter;
 mod tests;
 
 extern crate clap;
+
+#[macro_use]
+extern crate log;
+extern crate simple_logger;
 extern crate rusoto_core;
 extern crate rusoto_ssm;
 extern crate yaml_rust;
@@ -20,17 +24,21 @@ use std::fs::File;
 use std::io::prelude::Read;
 use yaml_rust::YamlLoader;
 
-fn main() {
-    println!("Starting AWS parameter updates");
+fn main() -> Result<(), Box<dyn Error>> {
+    simple_logger::init_with_level(log::Level::Info)?;
+    
+    info!("Starting AWS parameter updates");
 
     let input_filename = get_filename_from_args();
-    println!("Using input file: {}", input_filename);
+    info!("Using input file: {}", input_filename);
 
-    let parmeters_from_yaml = read_parameters_yaml(input_filename).unwrap();
-    println!("Parameters YAML loaded");
+    let parmeters_from_yaml = read_parameters_yaml(input_filename)?;
+    info!("Parameters YAML loaded");
 
     update_parameters(parmeters_from_yaml);
-    println!("Parameters update finished running");
+    info!("Parameters update finished running");
+
+    Ok(())
 }
 
 fn get_filename_from_args() -> String {
@@ -79,8 +87,8 @@ fn update_parameters(parameters_from_yaml: Vec<Parameter>) {
 
     for parameter in parameters_from_yaml {
         match parameter.update(&client) {
-            Ok(parameter_name) => println!("Parameter {} processed", parameter_name),
-            Err(error) => println!("Parameter not updated: {:?}", error),
+            Ok(parameter_name) => info!("Parameter {} processed", parameter_name),
+            Err(error) => error!("Parameter not updated: {:?}", error),
         }
     }
 }
