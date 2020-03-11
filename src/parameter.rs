@@ -1,4 +1,4 @@
-use log::{info, error};
+use log::{error, info};
 use rusoto_ssm::GetParameterRequest;
 use rusoto_ssm::PutParameterRequest;
 use rusoto_ssm::{Ssm, SsmClient};
@@ -73,5 +73,80 @@ impl Parameter {
             tags: None,
             tier: None,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::parameter::Parameter;
+
+    #[test]
+    fn get_parameter_request_sets_with_decryption_true() {
+        let secure_parameter: Parameter = Parameter {
+            name: "test_name".to_string(),
+            value: "test_value".to_string(),
+            description: "test_description".to_string(),
+            is_secure: true,
+        };
+
+        let request = secure_parameter.to_get_parameter_request();
+
+        assert_eq!(request.with_decryption.unwrap(), true);
+    }
+
+    #[test]
+    fn get_parameter_request_sets_name() {
+        let secure_parameter: Parameter = Parameter {
+            name: "test_name".to_string(),
+            value: "test_value".to_string(),
+            description: "test_description".to_string(),
+            is_secure: true,
+        };
+
+        let request = secure_parameter.to_get_parameter_request();
+
+        assert_eq!(request.name, "test_name".to_string());
+    }
+
+    #[test]
+    fn put_parameter_request_sets_overwrite_true() {
+        let secure_parameter: Parameter = Parameter {
+            name: "test_name".to_string(),
+            value: "test_value".to_string(),
+            description: "test_description".to_string(),
+            is_secure: true,
+        };
+
+        let request = secure_parameter.to_put_parameter_request();
+
+        assert_eq!(request.overwrite.unwrap(), true);
+    }
+
+    #[test]
+    fn put_parameter_request_is_secure_sets_type_secure_string() {
+        let secure_parameter: Parameter = Parameter {
+            name: "test_name".to_string(),
+            value: "test_value".to_string(),
+            description: "test_description".to_string(),
+            is_secure: true,
+        };
+
+        let request = secure_parameter.to_put_parameter_request();
+
+        assert_eq!(request.type_, "SecureString");
+    }
+
+    #[test]
+    fn put_parameter_request_is_not_secure_sets_type_string() {
+        let secure_parameter: Parameter = Parameter {
+            name: "test_name".to_string(),
+            value: "test_value".to_string(),
+            description: "test_description".to_string(),
+            is_secure: false,
+        };
+
+        let request = secure_parameter.to_put_parameter_request();
+
+        assert_eq!(request.type_, "String");
     }
 }
