@@ -12,14 +12,22 @@ pub struct Parameter {
 }
 
 impl Parameter {
+    // pub fn new(param: ) -> Result<Parameter, &'static str> {
+    //     Ok()
+    // }
+
     pub fn update(&self, client: &SsmClient) -> Result<String, NoneError> {
         if self.needs_updating(client)? {
+            info!("Parameter {} needs updating", self.name);
+
             let parameter_request = self.to_put_parameter_request();
 
             match client.put_parameter(parameter_request).sync() {
                 Ok(_parameter_result) => info!("Parameter {} successfully updated", self.name),
                 Err(error) => error!("Parameter {} failed to update: {}", self.name, error),
             }
+        } else {
+            info!("Parameter {} does not need updating", self.name);
         }
 
         Ok(self.name.clone())
@@ -29,22 +37,17 @@ impl Parameter {
         match client.get_parameter(self.to_get_parameter_request()).sync() {
             Ok(parameter_result) => {
                 let existing_value = parameter_result.parameter?.value?;
+
                 info!(
                     "Found parameter {} with existing value: {}",
                     self.name, existing_value
                 );
 
-                if self.value != existing_value {
-                    info!("Parameter {} needs updating", self.name);
-                    Ok(true)
-                } else {
-                    info!("Parameter {} does not need updating", self.name);
-                    Ok(false)
-                }
+                Ok(self.value != existing_value)
             }
             Err(error) => {
                 error!("Could not retreive parameter {}: {:?}", self.name, error);
-                panic!();
+                Err(std::option::NoneError)
             }
         }
     }
