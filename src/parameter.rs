@@ -12,10 +12,6 @@ pub struct Parameter {
 }
 
 impl Parameter {
-    // pub fn new(param: ) -> Result<Parameter, &'static str> {
-    //     Ok()
-    // }
-
     pub fn update(&self, client: &SsmClient) -> Result<String, NoneError> {
         if self.needs_updating(client)? {
             info!("Parameter {} needs updating", self.name);

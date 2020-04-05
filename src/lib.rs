@@ -1,10 +1,13 @@
+//! # AWS Parameter Update
+//!
+//! `aws_parameter_update` is a small tool used to quickly update simple AWS Parameters
+
 #![feature(try_trait)]
 
 mod parameter;
 
-use parameter::Parameter;
-
 use log::{error, info};
+use parameter::Parameter;
 use rusoto_core::Region;
 use rusoto_ssm::SsmClient;
 use std::error::Error;
@@ -12,12 +15,53 @@ use std::fs::File;
 use std::io::prelude::Read;
 use yaml_rust::YamlLoader;
 
+/// Updates AWS Parameters from a YAML file
+///
+/// # File Structure
+/// The file structure for updating paramters is as follows:
+/// ```
+/// - name: "new_parameter"
+///   value: "Example parameter"
+///   description: "An example of an unsecure parameter"
+///   is_secure: false
+/// - name: "new_secure_parameter"
+///   value: "$uper$ecretP@$$W0rd"
+///   description: "An example of an unsecure parameter
+///   is_secure: true
+/// ```
+///
+/// # Example
+///
+/// ```
+/// match aws_parameter_update::update_from_file("parameters.yaml") {
+///     Ok(_) => {
+///         println!("Parameter update finished");
+///     }
+///     Err(error) => {
+///         println!("Parameter updated failed: {}", error);
+///     }
+/// };
+/// ```
 pub fn update_from_file(filename: &str) -> Result<(), Box<dyn (Error)>> {
     let parameters_from_yaml = read_parameters_yaml(&filename)?;
 
     update_parameters(parameters_from_yaml)
 }
 
+/// Updates AWS Parameter from calling function input
+///
+/// # Example
+///
+/// ```
+/// match aws_parameter_update::update_parameter("name", "value", "description", "is_secure") {
+///     Ok(_) => {
+///         println!("Parameter update finished");
+///     }
+///     Err(error) => {
+///         println!("Parameter updated failed: {}", error);
+///     }
+/// };
+/// ```
 pub fn update_parameter(
     name: &str,
     value: &str,
