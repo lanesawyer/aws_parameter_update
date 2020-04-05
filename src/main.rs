@@ -12,7 +12,7 @@ extern crate simple_logger;
 extern crate yaml_rust;
 
 use clap::{crate_version, App, Arg};
-use log::{error, info};
+use log::{error, info, warn};
 use std::error::Error;
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -39,7 +39,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 .long("name")
                 .value_name("name")
                 .conflicts_with("filename")
-                .requires_all(&["value", "description", "secure"])
+                .requires_all(&["value", "description"])
                 .takes_value(true),
         )
         .arg(
@@ -48,7 +48,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 .short("v")
                 .long("value")
                 .value_name("value")
-                .requires_all(&["name", "description", "secure"])
+                .requires_all(&["name", "description"])
                 .conflicts_with("filename")
                 .takes_value(true),
         )
@@ -58,13 +58,13 @@ fn main() -> Result<(), Box<dyn Error>> {
                 .short("d")
                 .long("description")
                 .value_name("description")
-                .requires_all(&["name", "value", "secure"])
+                .requires_all(&["name", "value"])
                 .conflicts_with("filename")
                 .takes_value(true),
         )
         .arg(
             Arg::with_name("secure")
-                .help("Should the parameter be stored securely")
+                .help("Stores the parameter securely")
                 .short("s")
                 .long("secure")
                 .requires_all(&["name", "value", "description"])
@@ -90,9 +90,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 error!("Parameter updated failed: {}", error);
             }
         };
-    }
-
-    if matches.is_present("name") {
+    } else if matches.is_present("name") {
         let name = matches.value_of("name").unwrap();
         let value = matches.value_of("value").unwrap();
         let description = matches.value_of("description").unwrap();
@@ -106,6 +104,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                 error!("Parameter updated failed: {}", error);
             }
         };
+    } else {
+        warn!("No input was provided. Use -h or --help to see valid input options")
     }
 
     info!("Ending AWS parameter updates");
