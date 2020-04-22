@@ -1,6 +1,6 @@
 [package]
 name = "aws_parameter_update"
-version = "0.2.3"
+version = "0.3.0"
 authors = ["Lane Sawyer <cratesio@lanesawyer.dev>"]
 edition = "2018"
 description = "A small tool used to quickly update simple AWS Parameters."
@@ -8,6 +8,14 @@ license = "MIT"
 repository = "https://github.com/lanesawyer/aws_parameter_update"
 documentation = "https://docs.rs/aws_parameter_update"
 readme = "README.md"
+
+[lib]
+name = "aws_parameter_update"
+path = "src/lib.rs"
+
+[[bin]]
+name = "apu"
+path = "src/main.rs"
 
 [dependencies]
 clap = "2.33.0"

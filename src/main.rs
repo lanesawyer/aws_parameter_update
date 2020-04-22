@@ -3,14 +3,6 @@
 #[cfg(test)]
 mod tests;
 
-extern crate aws_parameter_update;
-extern crate clap;
-extern crate log;
-extern crate rusoto_core;
-extern crate rusoto_ssm;
-extern crate simple_logger;
-extern crate yaml_rust;
-
 use clap::{crate_version, App, Arg};
 use log::{error, info, warn};
 use std::error::Error;

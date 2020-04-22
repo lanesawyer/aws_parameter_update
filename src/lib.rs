@@ -7,7 +7,7 @@
 mod parameter;
 
 use log::{error, info};
-use parameter::Parameter;
+pub use parameter::Parameter;
 use rusoto_core::Region;
 use rusoto_ssm::SsmClient;
 use std::error::Error;
@@ -19,7 +19,7 @@ use yaml_rust::YamlLoader;
 ///
 /// # File Structure
 /// The file structure for updating paramters is as follows:
-/// ```
+/// ```yaml
 /// - name: "new_parameter"
 ///   value: "Example parameter"
 ///   description: "An example of an unsecure parameter"
@@ -33,12 +33,14 @@ use yaml_rust::YamlLoader;
 /// # Example
 ///
 /// ```
-/// match aws_parameter_update::update_from_file("parameters.yaml") {
+/// let filename = "parameters.yaml";
+///
+/// match aws_parameter_update::update_from_file(filename) {
 ///     Ok(_) => {
-///         println!("Parameter update finished");
+///         println!("Parameter update from file {} finished", filename);
 ///     }
 ///     Err(error) => {
-///         println!("Parameter updated failed: {}", error);
+///         println!("Parameter updated from file {} failed: {}", filename, error);
 ///     }
 /// };
 /// ```
@@ -53,12 +55,17 @@ pub fn update_from_file(filename: &str) -> Result<(), Box<dyn (Error)>> {
 /// # Example
 ///
 /// ```
-/// match aws_parameter_update::update_parameter("name", "value", "description", "is_secure") {
+/// let name = "name".to_string();
+/// let value = "value".to_string();
+/// let description = "description".to_string();
+/// let is_secure = true;
+///
+/// match aws_parameter_update::update_parameter(&name, &value, &description, is_secure) {
 ///     Ok(_) => {
 ///         println!("Parameter update finished");
 ///     }
 ///     Err(error) => {
-///         println!("Parameter updated failed: {}", error);
+///         println!("Parameter update failed: {}", error);
 ///     }
 /// };
 /// ```
@@ -76,7 +83,36 @@ pub fn update_parameter(
     }])
 }
 
-fn update_parameters(parameters: Vec<Parameter>) -> Result<(), Box<dyn (Error)>> {
+/// Updates AWS Parameters from calling function input
+///
+/// # Example
+///
+/// ```
+/// use aws_parameter_update::Parameter;
+///
+/// let parameters_to_update = vec![Parameter {
+///         name: "firstName".to_string(),
+///         value:"firstValue".to_string(),
+///         description: "firstDescription".to_string(),
+///         is_secure: true,
+///     },
+///     Parameter {
+///         name: "secondName".to_string(),
+///         value:"secondValue".to_string(),
+///         description: "secondDescription".to_string(),
+///         is_secure: false,
+///     }];
+///
+/// match aws_parameter_update::update_parameters(parameters_to_update) {
+///     Ok(_) => {
+///         println!("Parameter updates finished");
+///     }
+///     Err(error) => {
+///         println!("Parameter updates failed: {}", error);
+///     }
+/// };
+/// ```
+pub fn update_parameters(parameters: Vec<Parameter>) -> Result<(), Box<dyn (Error)>> {
     let client = SsmClient::new(Region::UsWest2);
 
     for parameter in parameters {
