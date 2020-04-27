@@ -4,7 +4,7 @@ This is a small tool used to quickly update simple AWS Parameters.
 
 ## CLI Tool
 
-Run `aws_parameter_update -h` to see a list of commands and their usage.
+Run `apu -h` to see a list of commands and their usage.
 
 # Updating From a File
 

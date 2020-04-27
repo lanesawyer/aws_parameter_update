@@ -4,14 +4,42 @@ use rusoto_ssm::PutParameterRequest;
 use rusoto_ssm::{Ssm, SsmClient};
 use std::option::NoneError;
 
+/// Parameter struct
 pub struct Parameter {
+    /// `name` corresponds to the AWS parameter name
     pub name: String,
+    /// `value` is the parameter's value, stored as a String
     pub value: String,
+    /// `description` is extra text used to clarify the use of a parameter
     pub description: String,
+    /// 'is_secure' toggles whether the parameter should be encrypted
     pub is_secure: bool,
 }
 
 impl Parameter {
+    /// Updates a parameter
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use aws_parameter_update::Parameter;
+    /// use rusoto_core::Region;
+    /// use rusoto_ssm::SsmClient;
+    ///
+    /// let client = SsmClient::new(Region::UsWest2);
+    ///
+    /// let parameter = Parameter {
+    ///     name: "name".to_string(),
+    ///     value: "value".to_string(),
+    ///     description: "description".to_string(),
+    ///     is_secure: true
+    /// };
+    ///
+    /// match parameter.update(&client) {
+    ///     Ok(parameter_name) => println!("Parameter {} processed", parameter_name),
+    ///     Err(_error) => println!("Parameter not updated"),
+    /// }
+    /// ```
     pub fn update(&self, client: &SsmClient) -> Result<String, NoneError> {
         if self.needs_updating(client)? {
             info!("Parameter {} needs updating", self.name);
