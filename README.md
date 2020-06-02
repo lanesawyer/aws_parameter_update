@@ -16,6 +16,6 @@ The file structure for updating paramters is as follows:
   is_secure: false
 - name: "new_secure_parameter"
   value: "$uper$ecretP@$$W0rd"
-  description: "An example of an unsecure parameter"
+  description: "An example of a secure parameter"
   is_secure: true
 ```

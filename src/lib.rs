@@ -28,7 +28,7 @@ use yaml_rust::YamlLoader;
 ///   is_secure: false
 /// - name: "new_secure_parameter"
 ///   value: "$uper$ecretP@$$W0rd"
-///   description: "An example of an unsecure parameter"
+///   description: "An example of a secure parameter"
 ///   is_secure: true
 /// ```
 ///
@@ -77,12 +77,7 @@ pub fn update_parameter(
     description: &str,
     is_secure: bool,
 ) -> Result<(), Box<dyn (Error)>> {
-    update_parameters(vec![Parameter {
-        name: name.to_string(),
-        value: value.to_string(),
-        description: description.to_string(),
-        is_secure,
-    }])
+    update_parameters(vec![Parameter::new(name, value, description, is_secure)])
 }
 
 /// Updates AWS Parameters from calling function input
@@ -92,18 +87,18 @@ pub fn update_parameter(
 /// ```
 /// use aws_parameter_update::Parameter;
 ///
-/// let parameters_to_update = vec![Parameter {
-///         name: "firstName".to_string(),
-///         value:"firstValue".to_string(),
-///         description: "firstDescription".to_string(),
-///         is_secure: true,
-///     },
-///     Parameter {
-///         name: "secondName".to_string(),
-///         value:"secondValue".to_string(),
-///         description: "secondDescription".to_string(),
-///         is_secure: false,
-///     }];
+/// let parameters_to_update = vec![Parameter::new(
+///         "firstName",
+///         "firstValue",
+///         "firstDescription",
+///         true,
+///     ),
+///     Parameter::new(
+///         "secondName",
+///         "secondValue",
+///         "secondDescription",
+///         false,
+///     )];
 ///
 /// match aws_parameter_update::update_parameters(parameters_to_update) {
 ///     Ok(_) => {
@@ -142,14 +137,40 @@ fn read_parameters_yaml(filename: &str) -> Result<Vec<Parameter>, Box<dyn (Error
         .unwrap()
         .to_vec()
         .iter()
-        .map(|param| Parameter {
-            name: param["name"].as_str().unwrap().to_string(),
-            value: param["value"].as_str().unwrap().to_string(),
-            description: param["description"].as_str().unwrap().to_string(),
-            is_secure: param["is_secure"].as_bool().unwrap(),
+        .map(|param| {
+            Parameter::new(
+                param["name"].as_str().unwrap(),
+                param["value"].as_str().unwrap(),
+                param["description"].as_str().unwrap(),
+                param["is_secure"].as_bool().unwrap(),
+            )
         })
         .collect();
 
     info!("Parameters YAML loaded");
     Ok(parameters)
+}
+
+mod tests {
+    #[test]
+    #[should_panic]
+    fn test_update_from_file() {
+        let result = crate::update_from_file("missing_file.yaml");
+
+        assert_ne!(result.unwrap(), ());
+    }
+
+    #[test]
+    fn test_update_parameter() {
+        let result = crate::update_parameter("name", "value", "description", true);
+    
+        assert_eq!(result.unwrap(), ());
+    }
+
+    #[test]
+    fn test_update_parameters() {
+        let result = crate::update_parameters(vec![crate::Parameter::new("name", "value", "description", true)]);
+        
+       assert_eq!(result.unwrap(), ());
+    }
 }
