@@ -34,7 +34,7 @@ use yaml_rust::YamlLoader;
 ///
 /// # Example
 ///
-/// ```
+/// ```should_panic because there is no file
 /// let filename = "parameters.yaml";
 ///
 /// match aws_parameter_update::update_from_file(filename) {
@@ -137,7 +137,7 @@ fn read_parameters_yaml(filename: &str) -> Result<Vec<Parameter>, Box<dyn (Error
         .unwrap()
         .to_vec()
         .iter()
-        .map(|param| {
+        .map(|param| -> Parameter {
             Parameter::new(
                 param["name"].as_str().unwrap(),
                 param["value"].as_str().unwrap(),

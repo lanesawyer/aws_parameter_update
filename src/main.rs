@@ -1,8 +1,5 @@
 #![feature(try_trait)]
 
-#[cfg(test)]
-mod tests;
-
 use clap::{crate_version, App, Arg};
 use log::{error, info, warn};
 use std::error::Error;
