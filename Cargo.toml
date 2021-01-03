@@ -18,7 +18,7 @@ name = "apu"
 path = "src/main.rs"
 
 [dependencies]
-clap = "2.33.0"
+clap = "2.33.3"
 log = "0.4.11"
 rusoto_core = "0.42"
 rusoto_ssm = "0.42"
