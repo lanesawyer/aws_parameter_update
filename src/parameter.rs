@@ -1,9 +1,9 @@
 use log::{error, info};
+use rusoto_core::RusotoError;
 use rusoto_ssm::GetParameterRequest;
 use rusoto_ssm::PutParameterRequest;
 use rusoto_ssm::{Ssm, SsmClient};
 use std::option::NoneError;
-use rusoto_core::RusotoError;
 
 /// Parameter struct
 ///
@@ -102,10 +102,13 @@ impl Parameter {
             }
             Err(error) => {
                 match error {
-                    RusotoError::Credentials(error) => error!("Could not retreive parameter {}: {:?}", self.name, error.message),
-                    _ => error!("Could not retreive parameter {}: {:?}", self.name, error)
+                    RusotoError::Credentials(error) => error!(
+                        "Could not retreive parameter {}: {:?}",
+                        self.name, error.message
+                    ),
+                    _ => error!("Could not retreive parameter {}: {:?}", self.name, error),
                 };
-                
+
                 Err(std::option::NoneError)
             }
         }

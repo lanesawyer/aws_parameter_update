@@ -163,14 +163,19 @@ mod tests {
     #[test]
     fn test_update_parameter() {
         let result = crate::update_parameter("name", "value", "description", true);
-    
+
         assert_eq!(result.unwrap(), ());
     }
 
     #[test]
     fn test_update_parameters() {
-        let result = crate::update_parameters(vec![crate::Parameter::new("name", "value", "description", true)]);
-        
-       assert_eq!(result.unwrap(), ());
+        let result = crate::update_parameters(vec![crate::Parameter::new(
+            "name",
+            "value",
+            "description",
+            true,
+        )]);
+
+        assert_eq!(result.unwrap(), ());
     }
 }
