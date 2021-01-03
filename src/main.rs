@@ -1,11 +1,11 @@
 #![feature(try_trait)]
 
 use clap::{crate_version, App, Arg};
-use log::{error, info, warn};
+use log::{error, info, warn, LevelFilter::Info};
 use std::error::Error;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    simple_logger::init_with_level(log::Level::Info)?;
+    simple_logger::SimpleLogger::new().with_level(Info).init()?;
 
     info!("Starting aws_parameter_update...");
 
