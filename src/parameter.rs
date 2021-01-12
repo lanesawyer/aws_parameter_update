@@ -11,9 +11,9 @@ use std::option::NoneError;
 /// ```
 /// use aws_parameter_update::Parameter;
 /// let parameter = Parameter {
-///     name: "example_name".to_string(),
-///     value: "example_value".to_string(),
-///     description: "example_description".to_string(),
+///     name: "example_name".into(),
+///     value: "example_value".into(),
+///     description: "example_description".into(),
 ///     is_secure: false    
 /// };
 /// ```
@@ -60,24 +60,24 @@ impl Parameter {
     /// let client = SsmClient::new(Region::UsWest2);
     ///
     /// let parameter = Parameter {
-    ///     name: "name".to_string(),
-    ///     value: "value".to_string(),
-    ///     description: "description".to_string(),
+    ///     name: "name".into(),
+    ///     value: "value".into(),
+    ///     description: "description".into(),
     ///     is_secure: true
     /// };
     ///
-    /// match parameter.update(&client) {
+    /// match tokio_test::block_on(parameter.update(&client)) {
     ///     Ok(parameter_name) => println!("Parameter {} processed", parameter_name),
     ///     Err(_error) => println!("Parameter not updated"),
     /// }
     /// ```
-    pub fn update(&self, client: &SsmClient) -> Result<String, NoneError> {
-        if self.needs_updating(client)? {
+    pub async fn update(&self, client: &SsmClient) -> Result<String, NoneError> {
+        if self.needs_updating(client).await? {
             info!("Parameter {} needs updating", self.name);
 
             let parameter_request = self.to_put_parameter_request();
 
-            match client.put_parameter(parameter_request).sync() {
+            match client.put_parameter(parameter_request).await {
                 Ok(_parameter_result) => info!("Parameter {} successfully updated", self.name),
                 Err(error) => error!("Parameter {} failed to update: {}", self.name, error),
             }
@@ -88,8 +88,8 @@ impl Parameter {
         Ok(self.name.clone())
     }
 
-    fn needs_updating(&self, client: &SsmClient) -> Result<bool, NoneError> {
-        match client.get_parameter(self.to_get_parameter_request()).sync() {
+    async fn needs_updating(&self, client: &SsmClient) -> Result<bool, NoneError> {
+        match client.get_parameter(self.to_get_parameter_request()).await {
             Ok(parameter_result) => {
                 let existing_value = parameter_result.parameter?.value?;
 
@@ -127,9 +127,9 @@ impl Parameter {
             value: self.value.clone(),
             description: Some(self.description.clone()),
             type_: if self.is_secure {
-                String::from("SecureString")
+                Some("SecureString".into())
             } else {
-                String::from("String")
+                Some("String".into())
             },
             overwrite: Some(true), // always overwrite or this utility is useless
             allowed_pattern: None,
@@ -137,6 +137,7 @@ impl Parameter {
             policies: None,
             tags: None,
             tier: None,
+            data_type: None,
         }
     }
 }
@@ -182,7 +183,7 @@ mod tests {
 
         let request = secure_parameter.to_put_parameter_request();
 
-        assert_eq!(request.type_, "SecureString");
+        assert_eq!(request.type_, Some("SecureString".into()));
     }
 
     #[test]
@@ -192,6 +193,6 @@ mod tests {
 
         let request = secure_parameter.to_put_parameter_request();
 
-        assert_eq!(request.type_, "String");
+        assert_eq!(request.type_, Some("String".into()));
     }
 }

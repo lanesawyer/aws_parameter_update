@@ -35,9 +35,9 @@ use yaml_rust::YamlLoader;
 /// # Example
 ///
 /// ```should_panic because there is no file
-/// let filename = "parameters.yaml";
+/// let filename = "non_existing_file.yaml";
 ///
-/// match aws_parameter_update::update_from_file(filename) {
+/// match tokio_test::block_on(aws_parameter_update::update_from_file(filename)) {
 ///     Ok(_) => {
 ///         println!("Parameter update from file {} finished", filename);
 ///     }
@@ -46,10 +46,10 @@ use yaml_rust::YamlLoader;
 ///     }
 /// };
 /// ```
-pub fn update_from_file(filename: &str) -> Result<(), Box<dyn (Error)>> {
+pub async fn update_from_file(filename: &str) -> Result<(), Box<dyn (Error)>> {
     let parameters_from_yaml = read_parameters_yaml(&filename)?;
 
-    update_parameters(parameters_from_yaml)
+    update_parameters(parameters_from_yaml).await
 }
 
 /// Updates AWS Parameter from calling function input
@@ -62,7 +62,7 @@ pub fn update_from_file(filename: &str) -> Result<(), Box<dyn (Error)>> {
 /// let description = "description".to_string();
 /// let is_secure = true;
 ///
-/// match aws_parameter_update::update_parameter(&name, &value, &description, is_secure) {
+/// match tokio_test::block_on(aws_parameter_update::update_parameter(&name, &value, &description, is_secure)) {
 ///     Ok(_) => {
 ///         println!("Parameter update finished");
 ///     }
@@ -71,13 +71,13 @@ pub fn update_from_file(filename: &str) -> Result<(), Box<dyn (Error)>> {
 ///     }
 /// };
 /// ```
-pub fn update_parameter(
+pub async fn update_parameter(
     name: &str,
     value: &str,
     description: &str,
     is_secure: bool,
 ) -> Result<(), Box<dyn (Error)>> {
-    update_parameters(vec![Parameter::new(name, value, description, is_secure)])
+    update_parameters(vec![Parameter::new(name, value, description, is_secure)]).await
 }
 
 /// Updates AWS Parameters from calling function input
@@ -100,7 +100,7 @@ pub fn update_parameter(
 ///         false,
 ///     )];
 ///
-/// match aws_parameter_update::update_parameters(parameters_to_update) {
+/// match tokio_test::block_on(aws_parameter_update::update_parameters(parameters_to_update)) {
 ///     Ok(_) => {
 ///         println!("Parameter updates finished");
 ///     }
@@ -109,11 +109,11 @@ pub fn update_parameter(
 ///     }
 /// };
 /// ```
-pub fn update_parameters(parameters: Vec<Parameter>) -> Result<(), Box<dyn (Error)>> {
+pub async fn update_parameters(parameters: Vec<Parameter>) -> Result<(), Box<dyn (Error)>> {
     let client = SsmClient::new(Region::UsWest2);
 
     for parameter in parameters {
-        match parameter.update(&client) {
+        match parameter.update(&client).await {
             Ok(parameter_name) => info!("Parameter {} processed", parameter_name),
             Err(_error) => error!("Parameter not updated"),
         }
@@ -152,29 +152,30 @@ fn read_parameters_yaml(filename: &str) -> Result<Vec<Parameter>, Box<dyn (Error
 }
 
 mod tests {
-    #[test]
+    #[tokio::test]
     #[should_panic]
-    fn test_update_from_file() {
-        let result = crate::update_from_file("missing_file.yaml");
+    async fn test_update_from_file() {
+        let result = crate::update_from_file("missing_file.yaml").await;
 
         assert_ne!(result.unwrap(), ());
     }
 
-    #[test]
-    fn test_update_parameter() {
-        let result = crate::update_parameter("name", "value", "description", true);
+    #[tokio::test]
+    async fn test_update_parameter() {
+        let result = crate::update_parameter("name", "value", "description", true).await;
 
         assert_eq!(result.unwrap(), ());
     }
 
-    #[test]
-    fn test_update_parameters() {
+    #[tokio::test]
+    async fn test_update_parameters() {
         let result = crate::update_parameters(vec![crate::Parameter::new(
             "name",
             "value",
             "description",
             true,
-        )]);
+        )])
+        .await;
 
         assert_eq!(result.unwrap(), ());
     }
