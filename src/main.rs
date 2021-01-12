@@ -1,11 +1,14 @@
 #![feature(try_trait)]
 
 use clap::{crate_version, App, Arg};
-use log::{error, info, warn, LevelFilter::Info};
+use log::{error, info, warn, LevelFilter};
 use std::error::Error;
 
-fn main() -> Result<(), Box<dyn Error>> {
-    simple_logger::SimpleLogger::new().with_level(Info).init()?;
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn Error>> {
+    simple_logger::SimpleLogger::new()
+        .with_level(LevelFilter::Info)
+        .init()?;
 
     info!("Starting aws_parameter_update...");
 
@@ -71,7 +74,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     if matches.is_present("filename") {
         let filename = matches.value_of("filename").unwrap();
-        match aws_parameter_update::update_from_file(filename) {
+        match aws_parameter_update::update_from_file(filename).await {
             Ok(_) => {
                 info!("Parameter update finished");
             }
@@ -85,7 +88,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let description = matches.value_of("description").unwrap();
         let is_secure = matches.is_present("secure");
 
-        match aws_parameter_update::update_parameter(name, value, description, is_secure) {
+        match aws_parameter_update::update_parameter(name, value, description, is_secure).await {
             Ok(_) => {
                 info!("Parameter update finished");
             }
