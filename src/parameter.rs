@@ -17,6 +17,7 @@ use std::option::NoneError;
 ///     is_secure: false    
 /// };
 /// ```
+#[derive(Debug, Clone)]
 pub struct Parameter {
     /// `name` corresponds to the AWS parameter name
     pub name: String,

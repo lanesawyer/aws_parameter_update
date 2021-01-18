@@ -130,22 +130,22 @@ fn read_parameters_yaml(filename: &str) -> Result<Vec<Parameter>, Box<dyn (Error
     file.read_to_string(&mut contents)
         .expect("Unable to read parameter input file");
 
-    let docs = YamlLoader::load_from_str(&contents)?;
-
-    let parameters: Vec<Parameter> = docs[0]
-        .as_vec()
-        .unwrap()
-        .to_vec()
-        .iter()
-        .map(|param| -> Parameter {
-            Parameter::new(
-                param["name"].as_str().unwrap(),
-                param["value"].as_str().unwrap(),
-                param["description"].as_str().unwrap(),
-                param["is_secure"].as_bool().unwrap(),
-            )
+    let parameters = YamlLoader::load_from_str(&contents)?
+        .into_iter()
+        .map(|yaml_document| -> Vec<Parameter> {
+            yaml_document.into_iter()
+                .map(|param| -> Parameter {
+                    Parameter::new(
+                        param["name"].as_str().unwrap(),
+                        param["value"].as_str().unwrap(),
+                        param["description"].as_str().unwrap(),
+                        param["is_secure"].as_bool().unwrap(),
+                    )
+                })
+                .collect::<Vec<Parameter>>()
         })
-        .collect();
+        .flatten()
+        .collect::<Vec<Parameter>>();
 
     info!("Parameters YAML loaded");
     Ok(parameters)
