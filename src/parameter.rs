@@ -149,8 +149,7 @@ mod tests {
 
     #[test]
     fn get_parameter_request_sets_with_decryption_true() {
-        let secure_parameter: Parameter =
-            Parameter::new("test_name", "test_value", "test_description", true);
+        let secure_parameter = Parameter::new("test_name", "test_value", "test_description", true);
 
         let request = secure_parameter.to_get_parameter_request();
 
@@ -159,8 +158,7 @@ mod tests {
 
     #[test]
     fn get_parameter_request_sets_name() {
-        let secure_parameter: Parameter =
-            Parameter::new("test_name", "test_value", "test_description", true);
+        let secure_parameter = Parameter::new("test_name", "test_value", "test_description", true);
 
         let request = secure_parameter.to_get_parameter_request();
 
@@ -169,8 +167,7 @@ mod tests {
 
     #[test]
     fn put_parameter_request_sets_overwrite_true() {
-        let secure_parameter: Parameter =
-            Parameter::new("test_name", "test_value", "test_description", true);
+        let secure_parameter = Parameter::new("test_name", "test_value", "test_description", true);
 
         let request = secure_parameter.to_put_parameter_request();
 
@@ -179,8 +176,7 @@ mod tests {
 
     #[test]
     fn put_parameter_request_is_secure_sets_type_secure_string() {
-        let secure_parameter: Parameter =
-            Parameter::new("test_name", "test_value", "test_description", true);
+        let secure_parameter = Parameter::new("test_name", "test_value", "test_description", true);
 
         let request = secure_parameter.to_put_parameter_request();
 
@@ -189,8 +185,7 @@ mod tests {
 
     #[test]
     fn put_parameter_request_is_not_secure_sets_type_string() {
-        let secure_parameter: Parameter =
-            Parameter::new("test_name", "test_value", "test_description", false);
+        let secure_parameter = Parameter::new("test_name", "test_value", "test_description", false);
 
         let request = secure_parameter.to_put_parameter_request();
 

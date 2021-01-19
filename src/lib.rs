@@ -12,9 +12,9 @@ use log::{error, info};
 pub use parameter::Parameter;
 use rusoto_core::Region;
 use rusoto_ssm::SsmClient;
-use std::{error::Error, iter::Map};
 use std::fs::File;
 use std::io::prelude::Read;
+use std::{error::Error, iter::Map};
 use yaml_rust::YamlLoader;
 
 /// Updates AWS Parameters from a YAML file
@@ -135,15 +135,14 @@ fn read_parameters_yaml(filename: &str) -> Result<Vec<Parameter>, Box<dyn (Error
     let parameters = YamlLoader::load_from_str(&contents)?
         .into_iter()
         .map(|yaml_document| -> Map<_, _> {
-            yaml_document.into_iter()
-                .map(|param| -> Parameter {
-                    Parameter::new(
-                        param["name"].as_str().expect("name missing"),
-                        param["value"].as_str().expect("value missing"),
-                        param["description"].as_str().expect("description missing"),
-                        param["is_secure"].as_bool().expect("is_secure missing")
-                    )
-                })
+            yaml_document.into_iter().map(|param| -> Parameter {
+                Parameter::new(
+                    param["name"].as_str().expect("name missing"),
+                    param["value"].as_str().expect("value missing"),
+                    param["description"].as_str().expect("description missing"),
+                    param["is_secure"].as_bool().expect("is_secure missing"),
+                )
+            })
         })
         .flatten()
         .collect::<Vec<_>>();

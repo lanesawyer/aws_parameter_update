@@ -1,5 +1,3 @@
-#![feature(try_trait)]
-
 use clap::{crate_version, App, Arg};
 use log::{error, info, warn, LevelFilter};
 use std::error::Error;
