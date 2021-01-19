@@ -1,3 +1,5 @@
+#![feature(try_trait)]
+
 use clap::{crate_version, App, Arg};
 use log::{error, info, warn, LevelFilter};
 use std::error::Error;
@@ -73,12 +75,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
     if matches.is_present("filename") {
         let filename = matches.value_of("filename").unwrap();
         match aws_parameter_update::update_from_file(filename).await {
-            Ok(_) => {
-                info!("Parameter update finished");
-            }
-            Err(error) => {
-                error!("Parameter updated failed: {}", error);
-            }
+            Ok(_) => info!("Parameter update finished"),
+            Err(error) => error!("Parameter updated failed: {}", error),
         };
     } else if matches.is_present("name") {
         let name = matches.value_of("name").unwrap();
@@ -87,12 +85,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
         let is_secure = matches.is_present("secure");
 
         match aws_parameter_update::update_parameter(name, value, description, is_secure).await {
-            Ok(_) => {
-                info!("Parameter update finished");
-            }
-            Err(error) => {
-                error!("Parameter updated failed: {}", error);
-            }
+            Ok(_) => info!("Parameter update finished"),
+            Err(error) => error!("Parameter updated failed: {}", error),
         };
     } else {
         warn!("No input was provided. Use -h or --help to see valid input options")
