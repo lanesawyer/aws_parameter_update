@@ -12,7 +12,7 @@ use log::{error, info};
 pub use parameter::Parameter;
 use rusoto_core::Region;
 use rusoto_ssm::SsmClient;
-use std::error::Error;
+use std::{error::Error, iter::Map};
 use std::fs::File;
 use std::io::prelude::Read;
 use yaml_rust::YamlLoader;
@@ -130,22 +130,23 @@ fn read_parameters_yaml(filename: &str) -> Result<Vec<Parameter>, Box<dyn (Error
     file.read_to_string(&mut contents)
         .expect("Unable to read parameter input file");
 
+    // YamlLoader returns a "doc" which can have multiple YAML files in it,
+    // hence the two iterators and the flattening
     let parameters = YamlLoader::load_from_str(&contents)?
         .into_iter()
-        .map(|yaml_document| -> Vec<Parameter> {
+        .map(|yaml_document| -> Map<_, _> {
             yaml_document.into_iter()
                 .map(|param| -> Parameter {
                     Parameter::new(
-                        param["name"].as_str().unwrap(),
-                        param["value"].as_str().unwrap(),
-                        param["description"].as_str().unwrap(),
-                        param["is_secure"].as_bool().unwrap(),
+                        param["name"].as_str().expect("name missing"),
+                        param["value"].as_str().expect("value missing"),
+                        param["description"].as_str().expect("description missing"),
+                        param["is_secure"].as_bool().expect("is_secure missing")
                     )
                 })
-                .collect::<Vec<Parameter>>()
         })
         .flatten()
-        .collect::<Vec<Parameter>>();
+        .collect::<Vec<_>>();
 
     info!("Parameters YAML loaded");
     Ok(parameters)
