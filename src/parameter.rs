@@ -1,4 +1,4 @@
-use log::{error, info};
+use log::{error, info };
 use rusoto_core::RusotoError;
 use rusoto_ssm::GetParameterRequest;
 use rusoto_ssm::PutParameterRequest;

@@ -1,6 +1,8 @@
 //! # AWS Parameter Update Library
 //!
 //! `aws_parameter_update` is a small tool used to quickly update simple AWS Parameters
+#![feature(try_trait)]
+
 #![warn(missing_docs)]
 #![warn(missing_doc_code_examples)]
 
