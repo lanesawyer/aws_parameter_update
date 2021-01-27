@@ -19,7 +19,7 @@ path = "src/main.rs"
 
 [dependencies]
 clap = "2.33.0"
-log = "0.4.11"
+log = "0.4.14"
 rusoto_core = "0.46"
 rusoto_ssm = "0.46"
 simple_logger = "1.11.0"
