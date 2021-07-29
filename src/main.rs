@@ -1,11 +1,9 @@
-#![feature(try_trait)]
-
+use anyhow::Result;
 use clap::{crate_version, App, Arg};
 use log::{error, info, warn, LevelFilter};
-use std::error::Error;
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
+async fn main() -> Result<()> {
     simple_logger::SimpleLogger::new()
         .with_level(LevelFilter::Info)
         .init()?;
