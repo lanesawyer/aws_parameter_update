@@ -4,10 +4,13 @@ version = "0.5.0"
 authors = ["Lane Sawyer <cratesio@lanesawyer.dev>"]
 edition = "2018"
 description = "A small tool used to quickly update simple AWS Parameters."
-license = "MIT"
+license_file = "LICENSE"
+homepage = "https://github.com/lanesawyer/aws_parameter_update"
 repository = "https://github.com/lanesawyer/aws_parameter_update"
 documentation = "https://docs.rs/aws_parameter_update"
 readme = "README.md"
+keywords = ["aws", "cli"]
+categories = ["command-line-utilities"]
 
 [lib]
 name = "aws_parameter_update"
