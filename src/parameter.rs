@@ -1,9 +1,9 @@
+use anyhow::{anyhow, Result};
 use log::{error, info};
 use rusoto_core::RusotoError;
 use rusoto_ssm::GetParameterRequest;
 use rusoto_ssm::PutParameterRequest;
 use rusoto_ssm::{Ssm, SsmClient};
-use std::option::NoneError;
 
 /// Parameter struct
 ///
@@ -72,7 +72,7 @@ impl Parameter {
     ///     Err(_error) => println!("Parameter not updated"),
     /// }
     /// ```
-    pub async fn update(&self, client: &SsmClient) -> Result<String, NoneError> {
+    pub async fn update(&self, client: &SsmClient) -> Result<String> {
         if self.needs_updating(client).await? {
             info!("Parameter {} needs updating", self.name);
 
@@ -89,28 +89,32 @@ impl Parameter {
         Ok(self.name.clone())
     }
 
-    async fn needs_updating(&self, client: &SsmClient) -> Result<bool, NoneError> {
+    async fn needs_updating(&self, client: &SsmClient) -> Result<bool> {
         match client.get_parameter(self.to_get_parameter_request()).await {
-            Ok(parameter_result) => {
-                let existing_value = parameter_result.parameter?.value?;
+            Ok(parameter_result) => match parameter_result.parameter {
+                Some(parameter) => match parameter.value {
+                    Some(parameter_value) => {
+                        info!(
+                            "Found parameter {} with existing value: {}",
+                            self.name, &parameter_value
+                        );
 
-                info!(
-                    "Found parameter {} with existing value: {}",
-                    self.name, existing_value
-                );
-
-                Ok(self.value != existing_value)
-            }
+                        Ok(self.value != parameter_value)
+                    }
+                    None => Err(anyhow!("No value was found")),
+                },
+                None => Err(anyhow!("No parameter was returned")),
+            },
             Err(error) => {
                 match error {
-                    RusotoError::Credentials(error) => error!(
-                        "Could not retreive parameter {}: {:?}",
-                        self.name, error.message
+                    RusotoError::Credentials(credential_error) => error!(
+                        "Error with credentials {}: {:?}",
+                        self.name, credential_error.message
                     ),
-                    _ => error!("Could not retreive parameter {}: {:?}", self.name, error),
+                    _ => error!("Could not retrieve parameter {}: {:?}", self.name, error),
                 };
 
-                Err(std::option::NoneError)
+                Err(anyhow!("Failed while fetching parameter"))
             }
         }
     }
@@ -118,7 +122,7 @@ impl Parameter {
     fn to_get_parameter_request(&self) -> GetParameterRequest {
         GetParameterRequest {
             name: self.name.clone(),
-            with_decryption: Some(true), // always decrypt so we can comepare existing and new values
+            with_decryption: Some(true), // always decrypt so we can compare existing and new values
         }
     }
 
@@ -153,7 +157,7 @@ mod tests {
 
         let request = secure_parameter.to_get_parameter_request();
 
-        assert_eq!(request.with_decryption.unwrap(), true);
+        assert!(request.with_decryption.unwrap());
     }
 
     #[test]
@@ -171,7 +175,7 @@ mod tests {
 
         let request = secure_parameter.to_put_parameter_request();
 
-        assert_eq!(request.overwrite.unwrap(), true);
+        assert!(request.overwrite.unwrap());
     }
 
     #[test]

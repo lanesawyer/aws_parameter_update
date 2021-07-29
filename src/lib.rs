@@ -1,25 +1,25 @@
 //! # AWS Parameter Update Library
 //!
 //! `aws_parameter_update` is a small tool used to quickly update simple AWS Parameters
-#![feature(try_trait)]
 #![warn(missing_docs)]
 #![warn(missing_doc_code_examples)]
 
-mod parameter;
-
+use anyhow::Result;
 use log::{error, info};
-pub use parameter::Parameter;
 use rusoto_core::Region;
 use rusoto_ssm::SsmClient;
 use std::fs::File;
 use std::io::prelude::Read;
-use std::{error::Error, iter::Map};
+use std::iter::Map;
 use yaml_rust::YamlLoader;
 
+pub use parameter::Parameter;
+
+mod parameter;
 /// Updates AWS Parameters from a YAML file
 ///
 /// # File Structure
-/// The file structure for updating paramters is as follows:
+/// The file structure for updating parameters is as follows:
 /// ```yaml
 /// - name: "new_parameter"
 ///   value: "Example parameter"
@@ -45,8 +45,8 @@ use yaml_rust::YamlLoader;
 ///     }
 /// };
 /// ```
-pub async fn update_from_file(filename: &str) -> Result<(), Box<dyn (Error)>> {
-    let parameters_from_yaml = read_parameters_yaml(&filename)?;
+pub async fn update_from_file(filename: &str) -> Result<()> {
+    let parameters_from_yaml = read_parameters_yaml(filename)?;
 
     update_parameters(parameters_from_yaml).await
 }
@@ -75,7 +75,7 @@ pub async fn update_parameter(
     value: &str,
     description: &str,
     is_secure: bool,
-) -> Result<(), Box<dyn (Error)>> {
+) -> Result<()> {
     update_parameters(vec![Parameter::new(name, value, description, is_secure)]).await
 }
 
@@ -108,7 +108,7 @@ pub async fn update_parameter(
 ///     }
 /// };
 /// ```
-pub async fn update_parameters(parameters: Vec<Parameter>) -> Result<(), Box<dyn (Error)>> {
+pub async fn update_parameters(parameters: Vec<Parameter>) -> Result<()> {
     let client = SsmClient::new(Region::UsWest2);
 
     for parameter in parameters {
@@ -122,7 +122,7 @@ pub async fn update_parameters(parameters: Vec<Parameter>) -> Result<(), Box<dyn
     Ok(())
 }
 
-fn read_parameters_yaml(filename: &str) -> Result<Vec<Parameter>, Box<dyn (Error)>> {
+fn read_parameters_yaml(filename: &str) -> Result<Vec<Parameter>> {
     let mut file = File::open(filename).expect("Unable to open parameter input file");
     let mut contents = String::new();
 
@@ -156,14 +156,14 @@ mod tests {
     async fn test_update_from_file() {
         let result = crate::update_from_file("missing_file.yaml").await;
 
-        assert_ne!(result.unwrap(), ());
+        assert!(result.is_err());
     }
 
     #[tokio::test]
     async fn test_update_parameter() {
         let result = crate::update_parameter("name", "value", "description", true).await;
 
-        assert_eq!(result.unwrap(), ());
+        assert!(result.is_ok());
     }
 
     #[tokio::test]
@@ -176,6 +176,6 @@ mod tests {
         )])
         .await;
 
-        assert_eq!(result.unwrap(), ());
+        assert!(result.is_ok());
     }
 }
