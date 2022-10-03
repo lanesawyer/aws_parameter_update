@@ -22,7 +22,7 @@ path = "src/main.rs"
 
 [dependencies]
 anyhow = "1.0.56"
-clap = "2.34.0"
+clap = "4.0.8"
 log = "0.4.16"
 rusoto_core = "0.47.0"
 rusoto_ssm = "0.47.0"
